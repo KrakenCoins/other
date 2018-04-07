@@ -65,6 +65,12 @@ function full_setup(){
 	then
 		update_conf
 	fi
+	echo "add Port to Ip tables?(y/n)"
+	read iptable
+	if [ "$iptable" = "y" ]
+	then
+		add_ip_to_iptables
+	fi
 	restart_service
 }
 function run_update() {
@@ -151,6 +157,18 @@ masternode=1
 masternodeprivkey=$masternodeprivkey
 EOF
 }
+function add_ip_to_iptables(){
+	
+	echo "Port to add?"
+	read newPort
+	echo "Adding"
+	apt-get install software-properties-common
+	iptables -A INPUT -p tcp -m tcp --dport $newPort -j ACCEPT
+	apt-get install iptables-persistent
+	iptables -L --line-numbers
+	iptables-save > /etc/iptables/rules.v4
+	
+}
 function restart_service(){
 	if [ -n "$username" ]; 
 	then
@@ -165,9 +183,10 @@ function restart_service(){
 }
 echo -e "[0;01;44mFunction Menu \n[0;34;0m"
 
-echo -e "1. Run full setup \t 2. Run update only \t\t 3. Create user"
-echo -e "4. Make swap space \t 5. Install dependencies \t 6. Install wallet"
-echo -e "7. Update conf \t\t 8. Restart  \t\t\t 9. Exit"
+echo -e "1. Run full setup \t 2. Run update only \t\t\t 3. Create user"
+echo -e "4. Make swap space \t 5. Install dependencies \t\t 6. Install wallet"
+echo -e "7. Update conf \t\t 8. update iptables (firewall)   \t 9. Restart"
+echo -e "10. Exit"
 echo -e " \nEnter number to run function"
 read input_value
 if [ "$input_value" = "1" ]
@@ -200,9 +219,14 @@ if [ "$input_value" = "7" ]
 fi
 if [ "$input_value" = "8" ]
 	then
+		add_ip_to_iptables
+fi
+
+if [ "$input_value" = "9" ]
+	then
 		restart_service
 fi
-if [ "$input_value" = "9" ]
+if [ "$input_value" = "10" ]
 	then
 		exit 1
 fi
